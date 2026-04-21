@@ -2,28 +2,23 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Roblox Clothing Downloader PRO</title>
+<title>Roblox Downloader FIXED</title>
 
 <style>
 body {
-    background: linear-gradient(135deg, #0a0a0a, #1a0000);
+    background: #0a0a0a;
     color: white;
     font-family: Arial;
     text-align: center;
     padding: 40px;
 }
 
-.container {
+.box {
     background: #111;
-    padding: 30px;
-    border-radius: 20px;
+    padding: 25px;
+    border-radius: 15px;
     max-width: 500px;
     margin: auto;
-    box-shadow: 0 0 30px rgba(255,0,0,0.2);
-}
-
-h1 {
-    color: red;
 }
 
 input {
@@ -31,48 +26,36 @@ input {
     width: 80%;
     border-radius: 10px;
     border: none;
-    margin-bottom: 15px;
     background: #222;
     color: white;
 }
 
 button {
-    padding: 12px 25px;
+    margin-top: 10px;
+    padding: 10px 20px;
     background: red;
-    color: white;
     border: none;
     border-radius: 10px;
+    color: white;
     cursor: pointer;
-    transition: 0.2s;
-}
-
-button:hover {
-    background: darkred;
 }
 
 img {
     margin-top: 20px;
     max-width: 100%;
-    border-radius: 15px;
-    box-shadow: 0 0 15px rgba(255,0,0,0.3);
-}
-
-.info {
-    margin-top: 10px;
-    color: #aaa;
-    font-size: 14px;
+    border-radius: 10px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
-    <h1>Roblox Template Downloader</h1>
+<div class="box">
+    <h2>Roblox Template Downloader</h2>
 
-    <input type="text" id="input" placeholder="Paste ID or URL...">
+    <input id="input" placeholder="ID or URL">
     <br>
-    <button onclick="load()">Get Template</button>
+    <button onclick="getAsset()">Get</button>
 
     <div id="result"></div>
 </div>
@@ -83,9 +66,8 @@ function getId(text) {
     return match ? match[0] : null;
 }
 
-async function load() {
-    const input = document.getElementById("input").value;
-    const id = getId(input);
+async function getAsset() {
+    const id = getId(document.getElementById("input").value);
 
     if (!id) {
         alert("Invalid ID");
@@ -96,48 +78,27 @@ async function load() {
     result.innerHTML = "Loading...";
 
     try {
-        // TRY REAL TEMPLATE
-        const assetUrl = `https://assetdelivery.roblox.com/v1/asset/?id=${id}`;
-        
-        const response = await fetch(assetUrl);
-        const text = await response.text();
+        // 🔥 USING PROXY (FIXES CORS)
+        const url = `https://thumbnails.roproxy.com/v1/assets?assetIds=${id}&size=420x420&format=Png`;
 
-        // Extract TextureId from XML
-        const match = text.match(/https:\/\/www\.roblox\.com\/asset\/\?id=\d+/);
+        const res = await fetch(url);
+        const data = await res.json();
 
-        if (match) {
-            const realId = match[0].match(/\d+/)[0];
-            const imgUrl = `https://assetdelivery.roblox.com/v1/asset/?id=${realId}`;
+        if (!data.data || !data.data[0]) throw "No data";
 
-            showResult(imgUrl, "REAL TEMPLATE");
-            return;
-        }
+        const img = data.data[0].imageUrl;
 
-        throw "No texture found";
+        result.innerHTML = `
+            <img src="${img}">
+            <br>
+            <a href="${img}" download>
+                <button>Download</button>
+            </a>
+        `;
 
-    } catch (e) {
-        // FALLBACK THUMBNAIL
-        const thumb = `https://thumbnails.roblox.com/v1/assets?assetIds=${id}&size=420x420&format=Png`;
-
-        fetch(thumb)
-        .then(r => r.json())
-        .then(data => {
-            const img = data.data[0].imageUrl;
-            showResult(img, "Preview only (fallback)");
-        });
+    } catch (err) {
+        result.innerHTML = "Error loading asset";
     }
-}
-
-function showResult(url, type) {
-    document.getElementById("result").innerHTML = `
-        <p>${type}</p>
-        <img src="${url}">
-        <div class="info">Expected size: 585x559 PNG</div>
-        <br>
-        <a href="${url}" download>
-            <button>Download</button>
-        </a>
-    `;
 }
 </script>
 
