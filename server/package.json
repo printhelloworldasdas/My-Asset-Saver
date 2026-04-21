@@ -1,0 +1,17 @@
+{
+  "name": "roblox-template-downloader",
+  "version": "1.0.0",
+  "description": "Backend para descargar templates reales de Roblox (Shirt/Pants)",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "node-fetch": "^2.6.7"
+  }
+}
