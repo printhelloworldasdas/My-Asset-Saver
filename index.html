@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Roblox Asset Downloader</title>
+<style>
+    body {
+        background: #0f0f0f;
+        color: white;
+        font-family: Arial;
+        text-align: center;
+        padding: 40px;
+    }
+
+    input {
+        padding: 10px;
+        width: 300px;
+        border-radius: 8px;
+        border: none;
+        margin-bottom: 15px;
+    }
+
+    button {
+        padding: 10px 20px;
+        background: red;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    img {
+        margin-top: 20px;
+        max-width: 300px;
+        border-radius: 10px;
+    }
+</style>
+</head>
+<body>
+
+<h1>Roblox Clothing Downloader</h1>
+
+<input type="text" id="assetInput" placeholder="Paste ID or URL">
+<br>
+<button onclick="loadAsset()">Get Template</button>
+
+<div id="result"></div>
+
+<script>
+function extractId(input) {
+    // Extract numbers from URL or raw ID
+    const match = input.match(/\d+/);
+    return match ? match[0] : null;
+}
+
+function loadAsset() {
+    const input = document.getElementById("assetInput").value;
+    const id = extractId(input);
+
+    if (!id) {
+        alert("Invalid ID or URL");
+        return;
+    }
+
+    // Thumbnail API (works better in browser)
+    const imageUrl = `https://thumbnails.roblox.com/v1/assets?assetIds=${id}&size=420x420&format=Png`;
+
+    fetch(imageUrl)
+        .then(res => res.json())
+        .then(data => {
+            const img = data.data[0].imageUrl;
+
+            document.getElementById("result").innerHTML = `
+                <p>Preview:</p>
+                <img src="${img}">
+                <br><br>
+                <a href="${img}" download>
+                    <button>Download Template</button>
+                </a>
+            `;
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Failed to fetch asset.");
+        });
+}
+</script>
+
+</body>
+</html>
