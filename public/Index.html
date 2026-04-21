@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Roblox Template Downloader</title>
+</head>
+<body>
+
+<input id="input" placeholder="ID or URL">
+<button onclick="go()">Get</button>
+
+<div id="out"></div>
+
+<script>
+function getId(t){return t.match(/\d+/)?.[0]}
+
+async function go(){
+    let id = getId(document.getElementById("input").value);
+
+    let res = await fetch("/api/" + id);
+    let data = await res.json();
+
+    if(data.url){
+        document.getElementById("out").innerHTML = `
+            <img src="${data.url}" width="300"><br>
+            <a href="${data.url}" download>Download</a>
+        `;
+    } else {
+        document.getElementById("out").innerText = "Error";
+    }
+}
+</script>
+
+</body>
+</html>
