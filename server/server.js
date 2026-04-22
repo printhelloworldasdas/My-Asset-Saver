@@ -1,8 +1,15 @@
 const express = require("express");
+const path = require("path");
 const fetch = require("node-fetch");
 const app = express();
 
-app.use(express.static("../public"));
+// Servir archivos estáticos desde la carpeta public
+app.use(express.static(path.join(__dirname, "public")));
+
+// Ruta principal - sirve el index.html
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+});
 
 app.get("/api/:id", async (req, res) => {
     const id = req.params.id;
@@ -25,4 +32,6 @@ app.get("/api/:id", async (req, res) => {
     }
 });
 
-app.listen(3000, () => console.log("http://localhost:3000"));
+// Usar el puerto que asigna Render
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Servidor corriendo en puerto ${PORT}`));
