@@ -1,106 +1,516 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Roblox Downloader FIXED</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>stab. sniper — callsigns de 2 caracteres</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-body {
-    background: #0a0a0a;
-    color: white;
-    font-family: Arial;
-    text-align: center;
-    padding: 40px;
-}
+  :root{
+    --void:#0d0e0f;
+    --void-2:#151719;
+    --line:#2a2d2f;
+    --paper:#f4f3ec;
+    --ink-on-paper:#1c1b17;
+    --text:#eeeee6;
+    --muted:#83887f;
+    --amber:#ffb020;
+    --amber-dim:#5a4420;
+    --green:#39d67a;
+    --red:#ff6a5a;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--void);
+    color:var(--text);
+    font-family:'Inter',system-ui,sans-serif;
+    min-height:100vh;
+  }
 
-.box {
-    background: #111;
-    padding: 25px;
-    border-radius: 15px;
-    max-width: 500px;
-    margin: auto;
-}
+  .topbar{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:22px 28px 0;
+  }
+  .brand{
+    font-family:'JetBrains Mono',monospace;font-weight:800;letter-spacing:.04em;font-size:14px;
+    display:flex;align-items:center;gap:8px;
+  }
+  .brand .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);box-shadow:0 0 8px var(--amber);}
+  .brand small{color:var(--muted);font-family:'Inter',sans-serif;font-weight:500;font-size:12px;}
+  .mode-toggle{
+    display:flex;gap:2px;background:var(--void-2);border:1px solid var(--line);border-radius:8px;padding:3px;
+  }
+  .mode-toggle button{
+    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.06em;
+    background:transparent;border:none;color:var(--muted);padding:7px 12px;border-radius:6px;cursor:pointer;
+  }
+  .mode-toggle button.active{background:var(--amber);color:#1a1200;font-weight:700;}
 
-input {
-    padding: 12px;
-    width: 80%;
-    border-radius: 10px;
-    border: none;
-    background: #222;
-    color: white;
-}
+  .wrap{max-width:640px;margin:0 auto;padding:0 24px 80px;}
 
-button {
-    margin-top: 10px;
-    padding: 10px 20px;
-    background: red;
-    border: none;
-    border-radius: 10px;
-    color: white;
-    cursor: pointer;
-}
+  .hero{text-align:center;padding:44px 0 8px;}
+  .hero h1{
+    font-family:'JetBrains Mono',monospace;font-size:15px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 6px;
+  }
+  .hero p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.55;max-width:480px;margin:0 auto;}
 
-img {
-    margin-top: 20px;
-    max-width: 100%;
-    border-radius: 10px;
-}
+  .how{
+    margin:20px auto 0;max-width:480px;border:1px solid var(--line);border-radius:10px;padding:12px 16px;
+    background:var(--void-2);font-size:12px;line-height:1.55;color:var(--muted);
+  }
+  .how b{color:#c7c4b4;}
+
+  /* ---------- manual: input row ---------- */
+  .input-row{
+    display:flex;gap:10px;justify-content:center;align-items:center;margin-top:32px;
+  }
+  #callsign-input{
+    width:130px;text-align:center;background:var(--void-2);border:1px solid var(--line);border-radius:10px;outline:none;
+    font-family:'JetBrains Mono',monospace;font-weight:800;font-size:34px;letter-spacing:.08em;
+    color:var(--text);padding:14px 0;caret-color:var(--amber);
+  }
+  #callsign-input:focus{border-color:var(--amber);}
+  #callsign-input::placeholder{color:var(--line);}
+
+  .hint{
+    text-align:center;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;
+    color:var(--muted);min-height:16px;margin-top:10px;
+  }
+  .hint.err{color:var(--red);}
+
+  .actions{display:flex;gap:10px;justify-content:center;margin-top:18px;}
+  .btn{
+    font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.08em;font-weight:700;
+    padding:13px 22px;border-radius:8px;border:1px solid var(--line);background:var(--void-2);
+    color:var(--text);cursor:pointer;
+  }
+  .btn:hover{border-color:var(--amber);}
+  .btn.primary{background:var(--amber);color:#1a1200;border-color:var(--amber);}
+  .btn.primary:hover{filter:brightness(1.08);}
+  .btn:disabled{opacity:.4;cursor:not-allowed;}
+
+  /* ---------- live viewer (shared by manual + sweep) ---------- */
+  .viewer{display:none;margin-top:28px;}
+  .viewer.show{display:block;}
+  .viewer-card{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--void-2);}
+  .viewer-head{
+    display:flex;justify-content:space-between;align-items:center;padding:11px 14px;
+    border-bottom:1px solid var(--line);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.05em;color:var(--muted);
+  }
+  .viewer-head .vurl{color:var(--text);font-weight:700;}
+  .viewer-head a{color:var(--muted);text-decoration:none;border:1px solid var(--line);padding:6px 10px;border-radius:6px;}
+  .viewer-head a:hover{color:var(--amber);border-color:var(--amber);}
+  .frame-box{position:relative;width:100%;height:400px;background:#000;}
+  .frame-box iframe{width:100%;height:100%;border:0;display:block;background:#fff;}
+  .frame-status{
+    position:absolute;inset:0;display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;
+    background:var(--void-2);padding:24px;text-align:center;
+  }
+  .frame-status.hide{display:none;}
+  .frame-status p{margin:0;font-size:12.5px;color:var(--muted);max-width:340px;line-height:1.5;}
+  .frame-status .spinner{
+    width:22px;height:22px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--amber);
+    animation:spin 0.8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .verdict-row{
+    display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;
+    padding:16px;border-top:1px solid var(--line);
+  }
+  .verdict-row .label{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:.05em;}
+  .verdict-btn{
+    font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.06em;font-weight:700;
+    padding:10px 18px;border-radius:7px;border:1px solid var(--line);background:var(--void);color:var(--muted);cursor:pointer;
+  }
+  .verdict-btn kbd{opacity:.6;font-weight:400;margin-left:4px;}
+  .verdict-btn.free:hover{border-color:var(--green);color:var(--green);}
+  .verdict-btn.taken:hover{border-color:var(--amber);color:var(--amber);}
+  .verdict-btn.skip:hover{border-color:var(--muted);color:var(--text);}
+
+  /* result chip after a verdict is set (manual mode) */
+  .verdict-chip{
+    display:none;margin-top:16px;align-items:center;gap:10px;justify-content:center;
+    font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.06em;
+  }
+  .verdict-chip.show{display:flex;}
+  .verdict-chip.free{color:var(--green);}
+  .verdict-chip.taken{color:var(--amber);}
+
+  /* ---------- sweep mode ---------- */
+  .sweep-panel{display:none;}
+  .sweep-panel.active{display:block;}
+  .sweep-controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:30px;}
+  .chip{
+    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.06em;
+    padding:9px 14px;border-radius:20px;border:1px solid var(--line);color:var(--muted);cursor:pointer;background:var(--void-2);
+  }
+  .chip.active{border-color:var(--amber);color:var(--amber);}
+  .queue-progress{margin:20px 0 4px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);
+    display:flex;justify-content:space-between;letter-spacing:.04em;}
+  .progress-bar{height:3px;background:var(--void-2);border-radius:3px;overflow:hidden;margin-top:4px;}
+  .progress-fill{height:100%;width:0%;background:var(--amber);transition:width .15s linear;}
+
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:26px;}
+  .col h3{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;margin:0 0 10px;}
+  .col.taken h3{color:var(--amber);}
+  .col.open h3{color:var(--green);}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:6px;max-height:220px;overflow-y:auto;padding-right:4px;}
+  .grid::-webkit-scrollbar{width:6px;}
+  .grid::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px;}
+  .cell{font-family:'JetBrains Mono',monospace;font-size:11px;text-align:center;padding:7px 0;border-radius:6px;border:1px solid var(--line);color:var(--muted);}
+  .col.taken .cell{border-color:var(--amber-dim);color:var(--amber);background:rgba(255,176,32,.06);}
+  .col.open .cell{border-color:#1f4a2e;color:var(--green);background:rgba(57,214,122,.06);}
+
+  .footnote{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);font-size:11.5px;line-height:1.6;color:var(--muted);}
+  .footnote b{color:#c7c4b4;}
+
+  @media (max-width:420px){
+    #callsign-input{font-size:28px;width:110px;}
+    .frame-box{height:340px;}
+    .cols{grid-template-columns:1fr;}
+  }
 </style>
 </head>
-
 <body>
 
-<div class="box">
-    <h2>Roblox Template Downloader</h2>
+<div class="topbar">
+  <div class="brand"><span class="dot"></span>STAB. SNIPER<small>&nbsp;/ stab.fund</small></div>
+  <div class="mode-toggle">
+    <button id="tab-manual" class="active">MANUAL</button>
+    <button id="tab-sweep">REVISIÓN</button>
+  </div>
+</div>
 
-    <input id="input" placeholder="ID or URL">
-    <br>
-    <button onclick="getAsset()">Get</button>
+<div class="wrap">
 
-    <div id="result"></div>
+  <!-- MANUAL MODE -->
+  <div id="panel-manual">
+    <div class="hero">
+      <h1>Localizador de callsign</h1>
+      <p>Escribe 2 caracteres — dos letras, dos números o una mezcla como "9x" — y te llevo a su página real en stab.fund. Tú miras si pone "Profile not found" y confirmas.</p>
+    </div>
+
+    <div class="input-row">
+      <input id="callsign-input" maxlength="2" placeholder="Ic" autocomplete="off" spellcheck="false">
+      <button class="btn primary" id="btn-check">VER PÁGINA</button>
+    </div>
+    <div class="hint" id="hint">2 caracteres: letras, números, o mezcla (ej. 9x)</div>
+
+    <div class="viewer" id="viewer-manual">
+      <div class="viewer-card">
+        <div class="viewer-head">
+          <span>stab.fund/<span class="vurl" id="vurl-manual">xx</span></span>
+          <a id="vopen-manual" href="#" target="_blank" rel="noopener">abrir en pestaña ↗</a>
+        </div>
+        <div class="frame-box">
+          <div class="frame-status" id="fstatus-manual">
+            <div class="spinner"></div>
+            <p>cargando la página real…</p>
+          </div>
+          <div class="frame-status hide" id="fblocked-manual">
+            <p>stab.fund no deja incrustar su página aquí. Pulsa "abrir en pestaña" arriba, mira si pone "Profile not found" y vuelve a marcar el veredicto abajo.</p>
+          </div>
+          <iframe id="iframe-manual" src="" title="stab.fund perfil"></iframe>
+        </div>
+        <div class="verdict-row">
+          <span class="label">¿qué pone ahí?</span>
+          <button class="verdict-btn free" id="vfree-manual">LIBRE</button>
+          <button class="verdict-btn taken" id="vtaken-manual">OCUPADO</button>
+        </div>
+      </div>
+      <div class="verdict-chip" id="vchip-manual"></div>
+    </div>
+
+    <div class="footnote">
+      <b>Por qué no lo adivina por ti:</b> stab.fund pinta "Profile not found" con su propio JavaScript después de consultar su base de datos — eso no se puede leer desde fuera sin su API real, y cualquier atajo (imágenes de vista previa, lectores externos) da falsos positivos y negativos, como ya viste. Así que en vez de arriesgarme a mentirte, te llevo a la página de verdad para que decidas tú mirándola.
+    </div>
+  </div>
+
+  <!-- SWEEP MODE -->
+  <div id="panel-sweep" class="sweep-panel">
+    <div class="hero">
+      <h1>Cola de revisión rápida</h1>
+      <p>Elige un conjunto de combinaciones de 2 caracteres. Te las voy pasando una a una, ya cargadas — tú marcas LIBRE, OCUPADO o SALTAR (también con teclado: L / O / S).</p>
+    </div>
+
+    <div class="sweep-controls">
+      <div class="chip active" data-set="letters">AA – ZZ (676)</div>
+      <div class="chip" data-set="digits">00 – 99 (100)</div>
+      <div class="chip" data-set="mixed">MIXTO, ej. 9X (520)</div>
+    </div>
+
+    <div class="actions" style="margin-top:18px;">
+      <button class="btn primary" id="btn-queue-start">EMPEZAR REVISIÓN</button>
+      <button class="btn" id="btn-queue-stop" style="display:none;">TERMINAR</button>
+    </div>
+
+    <div id="queue-area" style="display:none;">
+      <div class="queue-progress">
+        <span id="queue-count">0 / 0</span>
+        <span id="queue-pct">0%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="queue-fill"></div></div>
+
+      <div class="viewer show" style="margin-top:18px;">
+        <div class="viewer-card">
+          <div class="viewer-head">
+            <span>stab.fund/<span class="vurl" id="vurl-queue">xx</span></span>
+            <a id="vopen-queue" href="#" target="_blank" rel="noopener">abrir en pestaña ↗</a>
+          </div>
+          <div class="frame-box">
+            <div class="frame-status" id="fstatus-queue">
+              <div class="spinner"></div>
+              <p>cargando la página real…</p>
+            </div>
+            <div class="frame-status hide" id="fblocked-queue">
+              <p>stab.fund no deja incrustar su página aquí. Ábrela en pestaña, míralo y marca el veredicto igualmente.</p>
+            </div>
+            <iframe id="iframe-queue" src="" title="stab.fund perfil"></iframe>
+          </div>
+          <div class="verdict-row">
+            <button class="verdict-btn free" id="vfree-queue">LIBRE <kbd>L</kbd></button>
+            <button class="verdict-btn taken" id="vtaken-queue">OCUPADO <kbd>O</kbd></button>
+            <button class="verdict-btn skip" id="vskip-queue">SALTAR <kbd>S</kbd></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cols" id="queue-results" style="display:none;">
+      <div class="col taken">
+        <h3>● OCUPADOS <span id="count-taken">(0)</span></h3>
+        <div class="grid" id="grid-taken"></div>
+      </div>
+      <div class="col open">
+        <h3>● LIBRES <span id="count-open">(0)</span></h3>
+        <div class="grid" id="grid-open"></div>
+      </div>
+    </div>
+
+    <div class="footnote">
+      Cada candidato se carga desde la página real de stab.fund, así que el veredicto que marques es exacto — no hay adivinación de por medio, solo velocidad para no tener que abrir 676 pestañas a mano.
+    </div>
+  </div>
+
 </div>
 
 <script>
-function getId(text) {
-    let match = text.match(/\d+/);
-    return match ? match[0] : null;
-}
+(function(){
+  function validPattern(v){ return /^[a-zA-Z0-9]{2}$/.test(v); }
 
-async function getAsset() {
-    const id = getId(document.getElementById("input").value);
+  function wireFrame(url, iframeEl, statusEl, blockedEl){
+    statusEl.classList.remove('hide');
+    blockedEl.classList.add('hide');
+    iframeEl.style.display = 'block';
+    let settled = false;
+    const timer = setTimeout(()=>{
+      if(!settled){
+        settled = true;
+        statusEl.classList.add('hide');
+        blockedEl.classList.remove('hide');
+        iframeEl.style.display = 'none';
+      }
+    }, 4500);
+    iframeEl.onload = ()=>{
+      settled = true;
+      clearTimeout(timer);
+      statusEl.classList.add('hide');
+    };
+    iframeEl.src = url;
+  }
 
-    if (!id) {
-        alert("Invalid ID");
-        return;
+  // ---------- MANUAL MODE ----------
+  const input = document.getElementById('callsign-input');
+  const hint = document.getElementById('hint');
+  const btnCheck = document.getElementById('btn-check');
+  const viewerManual = document.getElementById('viewer-manual');
+  const vurlManual = document.getElementById('vurl-manual');
+  const vopenManual = document.getElementById('vopen-manual');
+  const iframeManual = document.getElementById('iframe-manual');
+  const fstatusManual = document.getElementById('fstatus-manual');
+  const fblockedManual = document.getElementById('fblocked-manual');
+  const vfreeManual = document.getElementById('vfree-manual');
+  const vtakenManual = document.getElementById('vtaken-manual');
+  const vchipManual = document.getElementById('vchip-manual');
+
+  input.addEventListener('input', ()=>{
+    input.value = input.value.replace(/[^a-zA-Z0-9]/g,'').slice(0,2);
+    vchipManual.classList.remove('show');
+  });
+  input.addEventListener('keydown', (e)=>{ if(e.key === 'Enter') showManual(); });
+  btnCheck.addEventListener('click', showManual);
+
+  function showManual(){
+    const v = input.value.trim();
+    if(!validPattern(v)){
+      hint.textContent = 'usa exactamente 2 caracteres alfanuméricos';
+      hint.classList.add('err');
+      return;
     }
+    hint.classList.remove('err');
+    hint.textContent = 'mirando…';
+    vchipManual.classList.remove('show');
+    const url = 'https://stab.fund/' + v;
+    vurlManual.textContent = v;
+    vopenManual.href = url;
+    viewerManual.classList.add('show');
+    wireFrame(url, iframeManual, fstatusManual, fblockedManual);
+    hint.textContent = 'marca lo que veas abajo';
+  }
 
-    const result = document.getElementById("result");
-    result.innerHTML = "Loading...";
+  vfreeManual.addEventListener('click', ()=>{
+    vchipManual.className = 'verdict-chip show free';
+    vchipManual.textContent = '● stab.fund/' + input.value.trim() + ' — LIBRE (confirmado por ti)';
+  });
+  vtakenManual.addEventListener('click', ()=>{
+    vchipManual.className = 'verdict-chip show taken';
+    vchipManual.textContent = '● stab.fund/' + input.value.trim() + ' — OCUPADO (confirmado por ti)';
+  });
 
-    try {
-        // 🔥 USING PROXY (FIXES CORS)
-        const url = `https://thumbnails.roproxy.com/v1/assets?assetIds=${id}&size=420x420&format=Png`;
+  // ---------- tabs ----------
+  const tabManual = document.getElementById('tab-manual');
+  const tabSweep = document.getElementById('tab-sweep');
+  const panelManual = document.getElementById('panel-manual');
+  const panelSweep = document.getElementById('panel-sweep');
+  tabManual.addEventListener('click', ()=>{
+    tabManual.classList.add('active'); tabSweep.classList.remove('active');
+    panelManual.style.display='block'; panelSweep.classList.remove('active');
+  });
+  tabSweep.addEventListener('click', ()=>{
+    tabSweep.classList.add('active'); tabManual.classList.remove('active');
+    panelSweep.classList.add('active'); panelManual.style.display='none';
+  });
 
-        const res = await fetch(url);
-        const data = await res.json();
+  // ---------- SWEEP / QUEUE MODE ----------
+  const chips = document.querySelectorAll('.chip');
+  let sweepSet = 'letters';
+  chips.forEach(c=>{
+    c.addEventListener('click', ()=>{
+      chips.forEach(x=>x.classList.remove('active'));
+      c.classList.add('active');
+      sweepSet = c.dataset.set;
+    });
+  });
 
-        if (!data.data || !data.data[0]) throw "No data";
+  const btnQueueStart = document.getElementById('btn-queue-start');
+  const btnQueueStop = document.getElementById('btn-queue-stop');
+  const queueArea = document.getElementById('queue-area');
+  const queueResults = document.getElementById('queue-results');
+  const queueCount = document.getElementById('queue-count');
+  const queuePct = document.getElementById('queue-pct');
+  const queueFill = document.getElementById('queue-fill');
+  const vurlQueue = document.getElementById('vurl-queue');
+  const vopenQueue = document.getElementById('vopen-queue');
+  const iframeQueue = document.getElementById('iframe-queue');
+  const fstatusQueue = document.getElementById('fstatus-queue');
+  const fblockedQueue = document.getElementById('fblocked-queue');
+  const vfreeQueue = document.getElementById('vfree-queue');
+  const vtakenQueue = document.getElementById('vtaken-queue');
+  const vskipQueue = document.getElementById('vskip-queue');
+  const gridTaken = document.getElementById('grid-taken');
+  const gridOpen = document.getElementById('grid-open');
+  const countTaken = document.getElementById('count-taken');
+  const countOpen = document.getElementById('count-open');
 
-        const img = data.data[0].imageUrl;
-
-        result.innerHTML = `
-            <img src="${img}">
-            <br>
-            <a href="${img}" download>
-                <button>Download</button>
-            </a>
-        `;
-
-    } catch (err) {
-        result.innerHTML = "Error loading asset";
+  function buildCandidates(set){
+    const list = [];
+    const letters = 'abcdefghijklmnopqrstuvwxyz';
+    const digits = '0123456789';
+    if(set === 'letters'){
+      for(const a of letters) for(const b of letters) list.push(a+b);
+    } else if(set === 'digits'){
+      for(let i=0;i<100;i++) list.push(String(i).padStart(2,'0'));
+    } else {
+      for(const a of letters) for(const b of digits){ list.push(a+b); list.push(b+a); }
     }
-}
+    return list;
+  }
+
+  let queue = [];
+  let qIdx = 0;
+  let takenN = 0, openN = 0;
+
+  function updateQueueBar(){
+    const pct = Math.round((qIdx/queue.length)*100);
+    queueCount.textContent = qIdx + ' / ' + queue.length;
+    queuePct.textContent = pct + '%';
+    queueFill.style.width = pct + '%';
+  }
+
+  function loadCurrent(){
+    if(qIdx >= queue.length){
+      finishQueue();
+      return;
+    }
+    const name = queue[qIdx];
+    const url = 'https://stab.fund/' + name;
+    vurlQueue.textContent = name;
+    vopenQueue.href = url;
+    wireFrame(url, iframeQueue, fstatusQueue, fblockedQueue);
+    updateQueueBar();
+  }
+
+  function addResult(name, exists){
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.textContent = name;
+    if(exists){ gridTaken.appendChild(cell); takenN++; countTaken.textContent = '('+takenN+')'; }
+    else { gridOpen.appendChild(cell); openN++; countOpen.textContent = '('+openN+')'; }
+  }
+
+  function advance(){
+    qIdx++;
+    loadCurrent();
+  }
+
+  vfreeQueue.addEventListener('click', ()=>{
+    if(qIdx >= queue.length) return;
+    addResult(queue[qIdx], false);
+    advance();
+  });
+  vtakenQueue.addEventListener('click', ()=>{
+    if(qIdx >= queue.length) return;
+    addResult(queue[qIdx], true);
+    advance();
+  });
+  vskipQueue.addEventListener('click', advance);
+
+  document.addEventListener('keydown', (e)=>{
+    if(queueArea.style.display === 'none') return;
+    if(document.activeElement === input) return;
+    if(e.key === 'l' || e.key === 'L') vfreeQueue.click();
+    if(e.key === 'o' || e.key === 'O') vtakenQueue.click();
+    if(e.key === 's' || e.key === 'S') vskipQueue.click();
+  });
+
+  function startQueue(){
+    queue = buildCandidates(sweepSet);
+    qIdx = 0; takenN = 0; openN = 0;
+    gridTaken.innerHTML = ''; gridOpen.innerHTML = '';
+    countTaken.textContent = '(0)'; countOpen.textContent = '(0)';
+    queueArea.style.display = 'block';
+    queueResults.style.display = 'grid';
+    btnQueueStart.style.display = 'none';
+    btnQueueStop.style.display = 'inline-block';
+    loadCurrent();
+  }
+
+  function finishQueue(){
+    btnQueueStart.style.display = 'inline-block';
+    btnQueueStop.style.display = 'none';
+    queueArea.style.display = 'none';
+  }
+
+  btnQueueStart.addEventListener('click', startQueue);
+  btnQueueStop.addEventListener('click', finishQueue);
+
+  input.focus();
+})();
 </script>
-
 </body>
 </html>
